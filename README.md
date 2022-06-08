@@ -1,6 +1,7 @@
 # geoservices
 
 [![Lines Of Code](https://tokei.rs/b1/github/openmarketplaceengine/geoservices?category=code)](https://github.com/openmarketplaceengine/geoservices)
+[![Go Reference](https://pkg.go.dev/badge/github.com/openmarketplaceengine/geoservices.svg)](https://pkg.go.dev/github.com/openmarketplaceengine/geoservices)
 [![Go Report Card](https://goreportcard.com/badge/github.com/openmarketplaceengine/geoservices)](https://goreportcard.com/report/github.com/openmarketplaceengine/geoservices)
 
 This is a Go library that abstracts over various 3rd-party geoservice vendors:
@@ -14,7 +15,7 @@ This is a Go library that abstracts over various 3rd-party geoservice vendors:
 
 **It's modular**. Import only the functionality you need.
 
-**It's performant**. We parallelize requests for you and partition distance 
+**It's performant**. We parallelize requests and partition distance 
 matrices for you.
 
 ## Getting started
