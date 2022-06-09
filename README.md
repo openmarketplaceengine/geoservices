@@ -64,4 +64,38 @@ Performance is roughly 1ms per 100 locations on a 10-core Apple M1 Pro chip.
 TODO
 
 ## Geocoding
-TODO
+The [`geocode`](./geocode) package abstracts over various geocoding solutions.
+
+For this example, we'll use Google Maps:
+```bash
+go get github.com/openmarketplaceengine/geoservices/geocode/google
+```
+
+Then in Go:
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"github.com/openmarketplaceengine/geoservices"
+	"github.com/openmarketplaceengine/geoservices/geocode/google"
+	"googlemaps.github.io/maps"
+	"os"
+)
+
+func main() {
+	ctx := context.Background()
+	target := geoservices.LatLng{40.7263248173875, -73.95246643844668}
+	client, err := maps.NewClient(maps.WithAPIKey(os.Getenv("GOOGLE_MAPS_API_KEY")))
+	if err != nil {
+		panic(err)
+	}
+	geocoder := google.NewGeocoder(client)
+	res, err := geocoder.ReverseGeocode(ctx, target)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res)
+}
+```
