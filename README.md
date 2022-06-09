@@ -61,7 +61,56 @@ are equidistant from the target.
 Performance is roughly 1ms per 100 locations on a 10-core Apple M1 Pro chip.
 
 ## Distance Matrix
-TODO
+The [`distance`](./distance) package abstracts over various Distance Matrix 
+solutions.
+
+For this example, we'll use Google Maps:
+```bash
+go get github.com/openmarketplaceengine/geoservices/distance/google
+```
+
+Then in Go:
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"github.com/openmarketplaceengine/geoservices"
+	"github.com/openmarketplaceengine/geoservices/distance"
+	"github.com/openmarketplaceengine/geoservices/distance/google"
+	"googlemaps.github.io/maps"
+	"os"
+)
+
+func main() {
+	ctx := context.Background()
+
+	origins := []geoservices.LatLng{
+		{40.736791925763455, -73.95519101851923},
+		{40.73622634374919, -73.95551867494544},
+	}
+
+	destination := geoservices.LatLng{40.7263248173875, -73.95246643844668}
+
+	client, err := maps.NewClient(maps.WithAPIKey(os.Getenv("GOOGLE_MAPS_API_KEY")))
+	if err != nil {
+		panic(err)
+	}
+
+	out, err := google.BetweenPoints(ctx, client, distance.BetweenPointsInput{
+		Destinations: []geoservices.LatLng{
+			destination,
+		},
+		Origins: origins,
+	})
+	
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res)
+}
+```
 
 ## Geocoding
 The [`geocode`](./geocode) package abstracts over various geocoding solutions.
