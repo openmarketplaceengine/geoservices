@@ -94,11 +94,14 @@ func main() {
 	ctx := context.Background()
 
 	origins := []geoservices.LatLng{
-		{40.736791925763455, -73.95519101851923},
-		{40.73622634374919, -73.95551867494544},
+		// Prospect Park Tennis Center
+		{40.651342660933835, -73.97032057647756},
+		// Brooklyn Botanic Garden
+		{40.66955251860222, -73.96234417342181},
 	}
 
-	destination := geoservices.LatLng{40.7263248173875, -73.95246643844668}
+	// Barclays Center (Brooklyn)
+	destination := geoservices.LatLng{40.68266462714047, -73.9754129316442}
 
 	client, err := maps.NewClient(maps.WithAPIKey(os.Getenv("GOOGLE_MAPS_API_KEY")))
 	if err != nil {
@@ -106,18 +109,27 @@ func main() {
 	}
 
 	out, err := google.BetweenPoints(ctx, client, distance.BetweenPointsInput{
+		Origins: origins,
 		Destinations: []geoservices.LatLng{
 			destination,
 		},
-		Origins: origins,
 	})
-	
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(res)
 }
 ```
+
+In this example, we're feeding in 2 origins (tennis center + botanic garden) and
+1 destination (Barclays Center).
+
+The response will contain:
+* a list of geocoded human-readable addresses for the origins (order matches input);
+* a list of geocoded human-readable addresses for the destination (order matches input);
+* a list of rows (per origin), where each row contains the pairwise distance/duration from said origin to each destination.
+
+**The order of outputs will correspond to order of inputs**.
 
 ### Geocoding
 The [`geocode`](./geocode) package abstracts over various geocoding solutions.
