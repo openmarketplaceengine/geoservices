@@ -13,18 +13,20 @@ This is a Go library that abstracts over various 3rd-party geoservice vendors:
 ## Why use this?
 **It's pluggable**. Use a 3rd-party vendor of your choice.
 
-**It's modular**. Import only the functionality you need.
+**It's modular**. Import only the functionality you need. ([Go 1.18 workspaces](https://go.dev/blog/get-familiar-with-workspaces) 
+really help keep dependency trees minimal).
 
 **It's performant**. We parallelize requests and partition distance 
 matrices for you.
 
 ## Getting started
-Install
-```bash
-go get github.com/openmarketplaceengine/geoservices
-```
 
 ## Ranking
+Install with:
+```bash
+go get github.com/openmarketplaceengine/geoservices/ranking
+```
+
 The [`ranking`](./ranking) package provides a function for getting the nearest 
 points to a specified location.
 ```go
