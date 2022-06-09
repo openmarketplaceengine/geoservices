@@ -10,6 +10,13 @@ This is a Go library that abstracts over various 3rd-party geoservice vendors:
 * GraphHopper (future)
 * MapBox (future)
 
+## Table of Contents
+1. [Why use this?](#why-use-this\?)
+2. [Getting started](#getting-started)
+   1. [Ranking](#ranking)
+   2. [Distance matrix](#distance-matrix)
+   3. [Geocoding](#geocoding)
+
 ## Why use this?
 🔌 **It's pluggable**. Use a 3rd-party vendor of your choice.
 
@@ -21,7 +28,7 @@ matrices for you.
 
 ## Getting started
 
-## Ranking
+### Ranking
 Install with:
 ```bash
 go get github.com/openmarketplaceengine/geoservices/ranking
@@ -60,7 +67,7 @@ are equidistant from the target.
 
 Performance is roughly 1ms per 100 locations on a 10-core Apple M1 Pro chip.
 
-## Distance Matrix
+### Distance Matrix
 The [`distance`](./distance) package abstracts over various Distance Matrix 
 solutions.
 
@@ -112,7 +119,7 @@ func main() {
 }
 ```
 
-## Geocoding
+### Geocoding
 The [`geocode`](./geocode) package abstracts over various geocoding solutions.
 
 For this example, we'll use Google Maps:
