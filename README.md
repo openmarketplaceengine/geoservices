@@ -120,12 +120,12 @@ func main() {
 	fmt.Println(res)
 	fmt.Printf("Getting from %q to %q takes %v\n",
 		"Prospect Park Tennis Center", // the 1st origin, hence Rows[0]
-		"Barclays Center (Brooklyn)", // the 1st destination, hence Elements[0]
+		"Barclays Center (Brooklyn)",  // the 1st destination, hence Elements[0]
 		res.Rows[0].Elements[0].Duration,
 	)
 	fmt.Printf("Getting from %q to %q takes %v\n",
-		"Brooklyn Botanic Garden", // the 2nd origin, hence Rows[1]
-		"Barclays Center (Brooklyn)", // the 1st destination, hence Elements[0]
+		"Brooklyn Botanic Garden",     // the 2nd origin, hence Rows[1]
+		"Barclays Center (Brooklyn)",  // the 1st destination, hence Elements[0]
 		res.Rows[1].Elements[0].Duration,
 	)
 }
