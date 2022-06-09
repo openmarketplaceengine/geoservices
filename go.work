@@ -2,5 +2,9 @@ go 1.18
 
 use .
 use ./distance
+use ./distance/google
+use ./distance/osrm
 use ./geocode
+use ./geocode/google
+use ./geocode/osrm
 use ./ranking

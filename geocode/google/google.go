@@ -6,22 +6,22 @@ import (
 	"github.com/codingsince1985/geo-golang"
 	"github.com/openmarketplaceengine/geoservices"
 	"github.com/openmarketplaceengine/geoservices/geocode"
-	gMaps "googlemaps.github.io/maps"
+	"googlemaps.github.io/maps"
 )
 
 var errNoResults = errors.New("no results found for coordinates")
 
 type Geocoder struct {
-	client *gMaps.Client
+	client *maps.Client
 }
 
-func NewGeocoder(client *gMaps.Client) *Geocoder {
+func NewGeocoder(client *maps.Client) *Geocoder {
 	return &Geocoder{client: client}
 }
 
 func (g *Geocoder) ReverseGeocode(ctx context.Context, location geoservices.LatLng) (*geocode.ReverseGeocodeOutput, error) {
-	results, err := g.client.ReverseGeocode(ctx, &gMaps.GeocodingRequest{
-		LatLng: &gMaps.LatLng{
+	results, err := g.client.ReverseGeocode(ctx, &maps.GeocodingRequest{
+		LatLng: &maps.LatLng{
 			Lat: location.Lat,
 			Lng: location.Lng,
 		},
@@ -40,7 +40,7 @@ func (g *Geocoder) ReverseGeocode(ctx context.Context, location geoservices.LatL
 	return toReverseGeocodeOutput(results), err
 }
 
-func toReverseGeocodeOutput(in []gMaps.GeocodingResult) *geocode.ReverseGeocodeOutput {
+func toReverseGeocodeOutput(in []maps.GeocodingResult) *geocode.ReverseGeocodeOutput {
 	// Assuming Google Maps API returns places ordered in such a way that
 	// the first element is the most salient/relevant.
 	bestResult := in[0]
