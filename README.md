@@ -11,12 +11,12 @@ This is a Go library that abstracts over various 3rd-party geoservice vendors:
 * MapBox (future)
 
 ## Why use this?
-**It's pluggable**. Use a 3rd-party vendor of your choice.
+🔌 **It's pluggable**. Use a 3rd-party vendor of your choice.
 
-**It's modular**. Import only the functionality you need. ([Go 1.18 workspaces](https://go.dev/blog/get-familiar-with-workspaces) 
+🧱 **It's modular**. Import only the functionality you need. ([Go 1.18 workspaces](https://go.dev/blog/get-familiar-with-workspaces) 
 really help keep dependency trees minimal).
 
-**It's performant**. We parallelize requests and partition distance 
+⚡ **It's performant**. We parallelize requests and partition distance 
 matrices for you.
 
 ## Getting started
