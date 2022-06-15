@@ -1,4 +1,4 @@
-module github.com/openmarketplaceengine/geoservices
+module github.com/openmarketplaceengine/geoservices/osrm
 
 go 1.18
 

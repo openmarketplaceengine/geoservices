@@ -1,7 +1,7 @@
 package table
 
 import (
-	osrm "github.com/openmarketplaceengine/geoservices"
+	"github.com/openmarketplaceengine/geoservices/osrm"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"

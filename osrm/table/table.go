@@ -3,7 +3,7 @@ package table
 import (
 	"encoding/json"
 	"fmt"
-	osrm "github.com/openmarketplaceengine/geoservices"
+	"github.com/openmarketplaceengine/geoservices/osrm"
 	"io/ioutil"
 	"net/http"
 	"net/url"
