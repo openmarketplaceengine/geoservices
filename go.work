@@ -8,3 +8,4 @@ use ./geocode
 use ./geocode/google
 use ./geocode/osrm
 use ./ranking
+use ./osrm
