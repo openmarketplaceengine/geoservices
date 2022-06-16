@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/openmarketplaceengine/geoservices/osrm"
+	"github.com/openmarketplaceengine/geoservices/osrm/options"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -99,10 +100,13 @@ func Routes(c *http.Client, request Request) (*Response, error) {
 
 	coords := "polyline(" + url.PathEscape(osrm.ToPolyline(request.Coordinates)) + ")"
 
-	s := fmt.Sprintf("steps=%v", request.Steps)
-	o := fmt.Sprintf("overview=%v", request.Overview)
-	a := fmt.Sprintf("annotations=%s", request.Annotations)
-	uri := fmt.Sprintf("https://router.project-osrm.org/route/v1/driving/%s?%s&%s&%s", coords, s, o, a)
+	opts := options.UrlEncode(map[string]interface{}{
+		"steps":       request.Steps,
+		"overview":    request.Overview,
+		"annotations": request.Annotations,
+	})
+
+	uri := fmt.Sprintf("https://router.project-osrm.org/route/v1/driving/%s?%s", coords, opts)
 
 	res, err := c.Get(uri)
 	defer res.Body.Close()
