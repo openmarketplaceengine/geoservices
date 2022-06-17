@@ -1,0 +1,22 @@
+name: Test
+
+on:
+  pull_request: # all pull requests
+  push:
+    branches:
+      - main # all pushes to `main`
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Tag'
+        required: false
+
+jobs:
+  container-job:
+    runs-on: ubuntu-latest
+    container: golang:1.18
+    steps:
+      - uses: actions/checkout@v2
+      - uses: golangci/golangci-lint-action@v2
+      - name: Test
+        run: make test
