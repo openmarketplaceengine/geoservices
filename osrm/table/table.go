@@ -19,12 +19,12 @@ const (
 )
 
 type Request struct {
-	Coordinates  []osrm.Coordinate
+	Coordinates  []osrm.LngLat
 	Origins      []int
 	Destinations []int
 	Annotations  Annotations
 	//FallbackSpeed      *float64
-	//FallbackCoordinate *osrm.Coordinate
+	//FallbackCoordinate *osrm.LngLat
 	//ScaleFactor        *float64
 }
 

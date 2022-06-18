@@ -1,12 +1,29 @@
 package osrm
 
-//Coordinate is Longitude[0] Latitude[1] pair
-type Coordinate [2]float64
+import (
+	"fmt"
+	"github.com/openmarketplaceengine/geoservices"
+)
+
+//LngLat is Longitude[0] Latitude[1] pair used on OSRM api
+//Note here reversed sequence comparing to geoservices.LatLng
+type LngLat [2]float64
 
 // Waypoint describes source or destination
 type Waypoint struct {
-	Hint     string     `json:"hint"`
-	Distance float64    `json:"distance"`
-	Name     string     `json:"name"`
-	Location Coordinate `json:"location"`
+	Hint     string  `json:"hint"`
+	Distance float64 `json:"distance"`
+	Name     string  `json:"name"`
+	Location LngLat  `json:"location"`
+}
+
+func (c LngLat) Textual() string {
+	return fmt.Sprintf("%v,%v", c[1], c[0])
+}
+
+func (c LngLat) ToLatLng() geoservices.LatLng {
+	return geoservices.LatLng{
+		Lat: c[1],
+		Lng: c[0],
+	}
 }

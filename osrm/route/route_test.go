@@ -9,7 +9,10 @@ import (
 
 func TestRoute(t *testing.T) {
 	request := Request{
-		Coordinates:      []osrm.Coordinate{{40.751753, -73.980052}, {40.794156, -73.962662}},
+		Coordinates: []osrm.LngLat{
+			{-73.980052, 40.751753},
+			{-73.962662, 40.794156},
+		},
 		Alternatives:     false,
 		Steps:            false,
 		Annotations:      Distance,
@@ -38,7 +41,10 @@ func TestRoute(t *testing.T) {
 
 func TestRouteSteps(t *testing.T) {
 	request := Request{
-		Coordinates:      []osrm.Coordinate{{40.751753, -73.980052}, {40.794156, -73.962662}},
+		Coordinates: []osrm.LngLat{
+			{-73.980052, 40.751753},
+			{-73.962662, 40.794156},
+		},
 		Alternatives:     false,
 		Steps:            true,
 		Annotations:      Distance,
