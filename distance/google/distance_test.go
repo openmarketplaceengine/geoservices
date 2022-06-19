@@ -1,16 +1,20 @@
-package osrm
+package google
 
 import (
 	"context"
 	"github.com/openmarketplaceengine/geoservices"
 	"github.com/openmarketplaceengine/geoservices/distance"
 	"github.com/stretchr/testify/require"
-	"net/http"
+	"googlemaps.github.io/maps"
+	"os"
 	"testing"
 	"time"
 )
 
 func TestBetweenPoints(t *testing.T) {
+	apiKey := os.Getenv("GOOGLE_API_KEY")
+	require.NotEmpty(t, apiKey)
+
 	a := geoservices.LatLng{
 		Lat: 40.791680675548136,
 		Lng: -73.9650115649754,
@@ -21,7 +25,9 @@ func TestBetweenPoints(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	res, err := BetweenPoints(ctx, new(http.Client), distance.BetweenPointsInput{
+	client, err := maps.NewClient(maps.WithAPIKey(apiKey))
+	require.NoError(t, err)
+	res, err := BetweenPoints(ctx, client, distance.BetweenPointsInput{
 		Origins:      []geoservices.LatLng{a},
 		Destinations: []geoservices.LatLng{b},
 	})
