@@ -10,25 +10,35 @@ import (
 	"time"
 )
 
-func BetweenPoints(ctx context.Context, c *http.Client, in distance.BetweenPointsInput) (*distance.MatrixResponse, error) {
-	request := toTableRequest(in)
-	res, err := table.Table(c, request)
+type Service struct {
+	c *http.Client
+}
+
+func NewService(c *http.Client) *Service {
+	return &Service{
+		c: c,
+	}
+}
+
+func (s *Service) GetMatrix(ctx context.Context, request distance.PointsRequest) (*distance.Matrix, error) {
+	req := toTableRequest(request)
+	res, err := table.Table(s.c, req)
 	if err != nil {
 		return nil, fmt.Errorf("OSRM table request error: %w", err)
 	}
-	return toMatrixResponse(res), nil
+	return toMatrix(res), nil
 }
 
-func toTableRequest(in distance.BetweenPointsInput) table.Request {
+func toTableRequest(request distance.PointsRequest) table.Request {
 	var coordinates = make([]osrm.LngLat, 0)
-	for _, origin := range in.Origins {
+	for _, origin := range request.Origins {
 		coordinates = append(coordinates, osrm.LngLat{origin.Lng, origin.Lat})
 	}
-	for _, destination := range in.Destinations {
+	for _, destination := range request.Destinations {
 		coordinates = append(coordinates, osrm.LngLat{destination.Lng, destination.Lat})
 	}
-	origins := makeRange(0, len(in.Origins)-1)
-	destinations := makeRange(len(in.Origins), len(in.Origins)+len(in.Destinations)-1)
+	origins := makeRange(0, len(request.Origins)-1)
+	destinations := makeRange(len(request.Origins), len(request.Origins)+len(request.Destinations)-1)
 	return table.Request{
 		Coordinates:  coordinates,
 		Origins:      origins,
@@ -45,7 +55,7 @@ func makeRange(min, max int) []int {
 	return a
 }
 
-func toMatrixResponse(res *table.Response) *distance.MatrixResponse {
+func toMatrix(res *table.Response) *distance.Matrix {
 	var rows []distance.MatrixElementsRow
 
 	var originAddresses []string
@@ -65,7 +75,7 @@ func toMatrixResponse(res *table.Response) *distance.MatrixResponse {
 		rows = append(rows, distance.MatrixElementsRow{Elements: elements})
 	}
 
-	return &distance.MatrixResponse{
+	return &distance.Matrix{
 		OriginAddresses:      originAddresses,
 		DestinationAddresses: destinationAddresses,
 		Rows:                 rows,

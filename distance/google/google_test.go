@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func TestBetweenPoints(t *testing.T) {
+func TestGetMatrix(t *testing.T) {
 	apiKey := os.Getenv("GOOGLE_API_KEY")
 	require.NotEmpty(t, apiKey)
 
@@ -27,13 +27,14 @@ func TestBetweenPoints(t *testing.T) {
 	ctx := context.Background()
 	client, err := maps.NewClient(maps.WithAPIKey(apiKey))
 	require.NoError(t, err)
-	res, err := BetweenPoints(ctx, client, distance.BetweenPointsInput{
+	s := NewService(client)
+	matrix, err := s.GetMatrix(ctx, distance.PointsRequest{
 		Origins:      []geoservices.LatLng{a},
 		Destinations: []geoservices.LatLng{b},
 	})
 	require.NoError(t, err)
-	require.Len(t, res.Rows, 1)
-	require.Len(t, res.Rows[0].Elements, 1)
-	require.Greater(t, res.Rows[0].Elements[0].Duration, time.Duration(0))
-	require.Greater(t, res.Rows[0].Elements[0].Distance, 0)
+	require.Len(t, matrix.Rows, 1)
+	require.Len(t, matrix.Rows[0].Elements, 1)
+	require.Greater(t, matrix.Rows[0].Elements[0].Duration, time.Duration(0))
+	require.Greater(t, matrix.Rows[0].Elements[0].Distance, 0)
 }

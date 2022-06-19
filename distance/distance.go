@@ -1,22 +1,28 @@
 package distance
 
 import (
+	"context"
 	"github.com/openmarketplaceengine/geoservices"
 	"time"
 )
 
-type BetweenPointsInput struct {
-	Destinations []geoservices.LatLng
-	Origins      []geoservices.LatLng
+type MatrixService interface {
+	GetMatrix(ctx context.Context, request PointsRequest) (*Matrix, error)
 }
 
-type BetweenPlacesInput struct {
+type PointsRequest struct {
+	Origins      []geoservices.LatLng
+	Destinations []geoservices.LatLng
+}
+
+type PlacesRequest struct {
 	Origins      []string
 	Destinations []string
 }
 
-// MatrixResponse represents a Distance Matrix API response.
-type MatrixResponse struct {
+// Matrix contains distance and duration information
+// for each origin/destination pair for which a route could be calculated.
+type Matrix struct {
 	// OriginAddresses contains an array of addresses as returned by the API from
 	// your original request.
 	OriginAddresses []string `json:"origin_addresses"`
