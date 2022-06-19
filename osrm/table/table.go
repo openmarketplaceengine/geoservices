@@ -19,15 +19,26 @@ const (
 )
 
 type Request struct {
-	Coordinates  []osrm.Coordinate
+	Coordinates  []osrm.LngLat
 	Origins      []int
 	Destinations []int
 	Annotations  Annotations
 	//FallbackSpeed      *float64
-	//FallbackCoordinate *osrm.Coordinate
+	//FallbackCoordinate *osrm.LngLat
 	//ScaleFactor        *float64
 }
 
+//Response object from OSRM table request
+//Durations - array of arrays that stores the matrix in row-major order.
+//durations[i][j] gives the travel time from the i-th waypoint to the j-th waypoint.
+//Values are given in seconds. Can be null if no route between i and j can be found.
+//
+//Distances - array of arrays that stores the matrix in row-major order.
+//distances[i][j] gives the travel distance from the i-th waypoint to the j-th waypoint.
+//Values are given in meters. Can be null if no route between i and j can be found.
+//
+//Sources - array of Waypoint objects describing all sources in order
+//Destinations -  array of Waypoint objects describing all destinations in order
 type Response struct {
 	Code         string          `json:"code"`
 	Distances    [][]float64     `json:"distances"`

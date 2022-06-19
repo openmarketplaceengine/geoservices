@@ -2,86 +2,38 @@ package osrm
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	osrm "github.com/gojuno/go.osrm"
 	"github.com/openmarketplaceengine/geoservices/distance"
-	"github.com/openmarketplaceengine/geoservices/geocode"
-	osrm2 "github.com/openmarketplaceengine/geoservices/geocode/osrm"
-	geo "github.com/paulmach/go.geo"
+	"github.com/openmarketplaceengine/geoservices/osrm"
+	"github.com/openmarketplaceengine/geoservices/osrm/table"
 	"net/http"
 	"time"
 )
 
-var (
-	errFailedRequest = errors.New("failed OSRM request")
-
-	geocodingEnabled = false
-)
-
-func BetweenPoints(
-	ctx context.Context,
-	httpClient *http.Client,
-	in distance.BetweenPointsInput) (*distance.MatrixResponse, error) {
-	// Batch reverse-geocode all locations
-	geocoder := osrm2.NewGeocoder(httpClient)
-
-	// Need to comply with Nominatim terms of use (which dictates 1 request per second)
-	// https://operations.osmfoundation.org/policies/nominatim/
-	parallelizationFactor := 1
-
-	var geocodeOut []*geocode.ReverseGeocodeOutput
-	if geocodingEnabled {
-		gg, err := geocode.BatchReverseGeocode(
-			ctx,
-			geocoder,
-			append(in.Origins, in.Destinations...),
-			parallelizationFactor)
-		if err != nil {
-			return nil, err
-		}
-		geocodeOut = gg
-	}
-
-	serverURL := "https://router.project-osrm.org"
-	client := osrm.NewWithConfig(osrm.Config{
-		ServerURL: serverURL,
-		Client:    httpClient,
-	})
-
-	res, err := client.Table(ctx, toTableReq(in))
-
+func BetweenPoints(ctx context.Context, c *http.Client, in distance.BetweenPointsInput) (*distance.MatrixResponse, error) {
+	request := toTableRequest(in)
+	res, err := table.Table(c, request)
 	if err != nil {
-		return nil, fmt.Errorf("failed OSRM request: %w", err)
+		return nil, fmt.Errorf("OSRM table request error: %w", err)
 	}
-
-	if res.Code != "Ok" {
-		return nil, errFailedRequest
-	}
-
-	var originsOut []*geocode.ReverseGeocodeOutput
-	var destinationsOut []*geocode.ReverseGeocodeOutput
-	if len(geocodeOut) > 0 {
-		originsOut = geocodeOut[:len(in.Origins)]
-		destinationsOut = geocodeOut[len(in.Origins):]
-	}
-
-	return fromTableRes(res, originsOut, destinationsOut), nil
+	return toMatrixResponse(res), nil
 }
 
-func toTableReq(in distance.BetweenPointsInput) osrm.TableRequest {
-	var pointSet geo.PointSet
-	for _, p := range in.Origins {
-		pointSet = append(pointSet, geo.Point{p.Lng, p.Lat})
+func toTableRequest(in distance.BetweenPointsInput) table.Request {
+	var coordinates = make([]osrm.LngLat, 0)
+	for _, origin := range in.Origins {
+		coordinates = append(coordinates, osrm.LngLat{origin.Lng, origin.Lat})
 	}
-	for _, p := range in.Destinations {
-		pointSet = append(pointSet, geo.Point{p.Lng, p.Lat})
+	for _, destination := range in.Destinations {
+		coordinates = append(coordinates, osrm.LngLat{destination.Lng, destination.Lat})
 	}
-	return osrm.TableRequest{
-		Profile:      "car",
-		Coordinates:  osrm.NewGeometryFromPointSet(pointSet),
-		Sources:      makeRange(0, len(in.Origins)-1),
-		Destinations: makeRange(len(in.Origins), len(in.Origins)+len(in.Destinations)-1),
+	origins := makeRange(0, len(in.Origins)-1)
+	destinations := makeRange(len(in.Origins), len(in.Origins)+len(in.Destinations)-1)
+	return table.Request{
+		Coordinates:  coordinates,
+		Origins:      origins,
+		Destinations: destinations,
+		Annotations:  table.DurationDistance,
 	}
 }
 
@@ -93,37 +45,26 @@ func makeRange(min, max int) []int {
 	return a
 }
 
-func fromTableRes(
-	res *osrm.TableResponse,
-	originsOut []*geocode.ReverseGeocodeOutput,
-	destinationsOut []*geocode.ReverseGeocodeOutput,
-) *distance.MatrixResponse {
+func toMatrixResponse(res *table.Response) *distance.MatrixResponse {
 	var rows []distance.MatrixElementsRow
-	for i := range res.Durations {
-		origin := res.Durations[i]
+
+	var originAddresses []string
+	var destinationAddresses []string
+	for i, source := range res.Sources {
+		originAddresses = append(originAddresses, source.Location.Textual())
 		var elements []distance.MatrixElement
-		for j := range origin {
-			destination := origin[j]
-			duration := time.Duration(destination) * time.Second
+		for j, destination := range res.Destinations {
+			destinationAddresses = append(destinationAddresses, destination.Location.Textual())
 			elements = append(elements, distance.MatrixElement{
 				Status:            "",
-				Duration:          duration,
+				Duration:          time.Duration(res.Durations[i][j]) * time.Second,
 				DurationInTraffic: 0,
-				Distance:          0,
+				Distance:          int(res.Distances[i][j] * 1000),
 			})
 		}
 		rows = append(rows, distance.MatrixElementsRow{Elements: elements})
 	}
-	var originAddresses []string
-	for idx := range originsOut {
-		geoResults := originsOut[idx]
-		originAddresses = append(originAddresses, geoResults.FormattedAddress)
-	}
-	var destinationAddresses []string
-	for idx := range destinationsOut {
-		geoResults := destinationsOut[idx]
-		destinationAddresses = append(destinationAddresses, geoResults.FormattedAddress)
-	}
+
 	return &distance.MatrixResponse{
 		OriginAddresses:      originAddresses,
 		DestinationAddresses: destinationAddresses,

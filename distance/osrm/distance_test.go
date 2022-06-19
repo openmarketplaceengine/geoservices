@@ -22,8 +22,8 @@ func TestBetweenPoints(t *testing.T) {
 
 	ctx := context.Background()
 	res, err := BetweenPoints(ctx, new(http.Client), distance.BetweenPointsInput{
-		Destinations: []geoservices.LatLng{a},
-		Origins:      []geoservices.LatLng{b},
+		Origins:      []geoservices.LatLng{a},
+		Destinations: []geoservices.LatLng{b},
 	})
 	require.NoError(t, err)
 	require.Len(t, res.Rows, 1)

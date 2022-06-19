@@ -42,7 +42,7 @@ const (
 )
 
 type Request struct {
-	Coordinates      []osrm.Coordinate
+	Coordinates      []osrm.LngLat
 	Alternatives     bool
 	Steps            bool
 	Annotations      Annotations
