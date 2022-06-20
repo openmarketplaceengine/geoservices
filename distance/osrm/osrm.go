@@ -10,19 +10,9 @@ import (
 	"time"
 )
 
-type Service struct {
-	c *http.Client
-}
-
-func NewService(c *http.Client) *Service {
-	return &Service{
-		c: c,
-	}
-}
-
-func (s *Service) GetMatrix(ctx context.Context, request distance.PointsRequest) (*distance.Matrix, error) {
+func GetMatrix(ctx context.Context, c *http.Client, request distance.PointsRequest) (*distance.Matrix, error) {
 	req := toTableRequest(request)
-	res, err := table.Table(s.c, req)
+	res, err := table.Table(c, req)
 	if err != nil {
 		return nil, fmt.Errorf("OSRM table request error: %w", err)
 	}

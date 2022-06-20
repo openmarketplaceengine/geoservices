@@ -11,7 +11,6 @@ import (
 )
 
 func TestGetMatrix(t *testing.T) {
-	s := NewService(&http.Client{})
 	a := geoservices.LatLng{
 		Lat: 40.791680675548136,
 		Lng: -73.9650115649754,
@@ -22,7 +21,7 @@ func TestGetMatrix(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	matrix, err := s.GetMatrix(ctx, distance.PointsRequest{
+	matrix, err := GetMatrix(ctx, &http.Client{}, distance.PointsRequest{
 		Origins:      []geoservices.LatLng{a},
 		Destinations: []geoservices.LatLng{b},
 	})

@@ -8,20 +8,10 @@ import (
 	"googlemaps.github.io/maps"
 )
 
-type Service struct {
-	c *maps.Client
-}
-
-func NewService(c *maps.Client) *Service {
-	return &Service{
-		c: c,
-	}
-}
-
-func (s *Service) GetMatrix(ctx context.Context, request distance.PointsRequest) (*distance.Matrix, error) {
+func GetMatrix(ctx context.Context, c *maps.Client, request distance.PointsRequest) (*distance.Matrix, error) {
 
 	// Batch reverse-geocode all locations
-	geocoder := google.NewGeocoder(s.c)
+	geocoder := google.NewGeocoder(c)
 	parallelizationFactor := 10
 	geocodeOut, err := geocode.BatchReverseGeocode(
 		ctx,
@@ -42,7 +32,7 @@ func (s *Service) GetMatrix(ctx context.Context, request distance.PointsRequest)
 		}
 	}
 
-	res, err := BetweenPlaces(ctx, s.c, distance.PlacesRequest{
+	res, err := BetweenPlaces(ctx, c, distance.PlacesRequest{
 		Origins:      origins,
 		Destinations: destinations,
 	})

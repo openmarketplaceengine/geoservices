@@ -27,8 +27,7 @@ func TestGetMatrix(t *testing.T) {
 	ctx := context.Background()
 	client, err := maps.NewClient(maps.WithAPIKey(apiKey))
 	require.NoError(t, err)
-	s := NewService(client)
-	matrix, err := s.GetMatrix(ctx, distance.PointsRequest{
+	matrix, err := GetMatrix(ctx, client, distance.PointsRequest{
 		Origins:      []geoservices.LatLng{a},
 		Destinations: []geoservices.LatLng{b},
 	})

@@ -1,14 +1,9 @@
 package distance
 
 import (
-	"context"
 	"github.com/openmarketplaceengine/geoservices"
 	"time"
 )
-
-type MatrixService interface {
-	GetMatrix(ctx context.Context, request PointsRequest) (*Matrix, error)
-}
 
 type PointsRequest struct {
 	Origins      []geoservices.LatLng
