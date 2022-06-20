@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type PointsRequest struct {
+type MatrixRequest struct {
 	Origins      []geoservices.LatLng
 	Destinations []geoservices.LatLng
 }

@@ -1,7 +1,6 @@
 package osrm
 
 import (
-	"context"
 	"fmt"
 	"github.com/openmarketplaceengine/geoservices/distance"
 	"github.com/openmarketplaceengine/geoservices/osrm"
@@ -10,7 +9,7 @@ import (
 	"time"
 )
 
-func GetMatrix(ctx context.Context, c *http.Client, request distance.PointsRequest) (*distance.Matrix, error) {
+func GetMatrix(c *http.Client, request distance.MatrixRequest) (*distance.Matrix, error) {
 	req := toTableRequest(request)
 	res, err := table.Table(c, req)
 	if err != nil {
@@ -19,7 +18,7 @@ func GetMatrix(ctx context.Context, c *http.Client, request distance.PointsReque
 	return toMatrix(res), nil
 }
 
-func toTableRequest(request distance.PointsRequest) table.Request {
+func toTableRequest(request distance.MatrixRequest) table.Request {
 	var coordinates = make([]osrm.LngLat, 0)
 	for _, origin := range request.Origins {
 		coordinates = append(coordinates, osrm.LngLat{origin.Lng, origin.Lat})

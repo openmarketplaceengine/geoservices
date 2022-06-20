@@ -8,7 +8,7 @@ import (
 	"googlemaps.github.io/maps"
 )
 
-func GetMatrix(ctx context.Context, c *maps.Client, request distance.PointsRequest) (*distance.Matrix, error) {
+func GetMatrix(ctx context.Context, c *maps.Client, request distance.MatrixRequest) (*distance.Matrix, error) {
 
 	// Batch reverse-geocode all locations
 	geocoder := google.NewGeocoder(c)
@@ -32,7 +32,7 @@ func GetMatrix(ctx context.Context, c *maps.Client, request distance.PointsReque
 		}
 	}
 
-	res, err := BetweenPlaces(ctx, c, distance.PlacesRequest{
+	matrix, err := GetMatrixFromPlaces(ctx, c, distance.PlacesRequest{
 		Origins:      origins,
 		Destinations: destinations,
 	})
@@ -40,10 +40,10 @@ func GetMatrix(ctx context.Context, c *maps.Client, request distance.PointsReque
 		return nil, err
 	}
 
-	return toMatrix(res, geocodeOut[:len(request.Origins)], geocodeOut[len(request.Origins):]), nil
+	return matrix, nil
 }
 
-func BetweenPlaces(ctx context.Context, c *maps.Client, in distance.PlacesRequest) (*maps.DistanceMatrixResponse, error) {
+func GetMatrixFromPlaces(ctx context.Context, c *maps.Client, in distance.PlacesRequest) (*distance.Matrix, error) {
 	var origins []string
 	for _, placeID := range in.Origins {
 		origins = append(origins, "place_id:"+placeID)
@@ -52,26 +52,17 @@ func BetweenPlaces(ctx context.Context, c *maps.Client, in distance.PlacesReques
 	for _, placeID := range in.Destinations {
 		destinations = append(destinations, "place_id:"+placeID)
 	}
-	return c.DistanceMatrix(ctx, &maps.DistanceMatrixRequest{
-		Origins:                  origins,
-		Destinations:             destinations,
-		Mode:                     "",
-		Language:                 "",
-		Avoid:                    "",
-		Units:                    "",
-		DepartureTime:            "",
-		ArrivalTime:              "",
-		TrafficModel:             "",
-		TransitMode:              nil,
-		TransitRoutingPreference: "",
+	matrix, err := c.DistanceMatrix(ctx, &maps.DistanceMatrixRequest{
+		Origins:      origins,
+		Destinations: destinations,
 	})
+	if err != nil {
+		return nil, err
+	}
+	return toMatrix(matrix), err
 }
 
-func toMatrix(
-	res *maps.DistanceMatrixResponse,
-	originsOut []*geocode.ReverseGeocodeOutput,
-	destinationsOut []*geocode.ReverseGeocodeOutput,
-) *distance.Matrix {
+func toMatrix(res *maps.DistanceMatrixResponse) *distance.Matrix {
 	var rows []distance.MatrixElementsRow
 	for i := range res.Rows {
 		row := res.Rows[i]
@@ -82,19 +73,9 @@ func toMatrix(
 		}
 		rows = append(rows, distance.MatrixElementsRow{Elements: elements})
 	}
-	var originAddresses []string
-	for idx := range originsOut {
-		geoResults := originsOut[idx]
-		originAddresses = append(originAddresses, geoResults.FormattedAddress)
-	}
-	var destinationAddresses []string
-	for idx := range destinationsOut {
-		geoResults := destinationsOut[idx]
-		destinationAddresses = append(destinationAddresses, geoResults.FormattedAddress)
-	}
 	return &distance.Matrix{
-		OriginAddresses:      originAddresses,
-		DestinationAddresses: destinationAddresses,
+		OriginAddresses:      res.OriginAddresses,
+		DestinationAddresses: res.DestinationAddresses,
 		Rows:                 rows,
 	}
 }

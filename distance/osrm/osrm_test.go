@@ -1,7 +1,6 @@
 package osrm
 
 import (
-	"context"
 	"github.com/openmarketplaceengine/geoservices"
 	"github.com/openmarketplaceengine/geoservices/distance"
 	"github.com/stretchr/testify/require"
@@ -20,8 +19,7 @@ func TestGetMatrix(t *testing.T) {
 		Lng: -73.98145413365043,
 	}
 
-	ctx := context.Background()
-	matrix, err := GetMatrix(ctx, &http.Client{}, distance.PointsRequest{
+	matrix, err := GetMatrix(&http.Client{}, distance.MatrixRequest{
 		Origins:      []geoservices.LatLng{a},
 		Destinations: []geoservices.LatLng{b},
 	})
