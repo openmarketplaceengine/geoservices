@@ -8,7 +8,7 @@ import (
 	"googlemaps.github.io/maps"
 )
 
-func GetMatrix(ctx context.Context, c *maps.Client, request distance.MatrixRequest) (*distance.Matrix, error) {
+func Matrix(ctx context.Context, c *maps.Client, input distance.MatrixPointsInput) (*distance.MatrixOutput, error) {
 
 	// Batch reverse-geocode all locations
 	geocoder := google.NewGeocoder(c)
@@ -16,7 +16,7 @@ func GetMatrix(ctx context.Context, c *maps.Client, request distance.MatrixReque
 	geocodeOut, err := geocode.BatchReverseGeocode(
 		ctx,
 		geocoder,
-		append(request.Origins, request.Destinations...),
+		append(input.Origins, input.Destinations...),
 		parallelizationFactor)
 	if err != nil {
 		return nil, err
@@ -25,14 +25,14 @@ func GetMatrix(ctx context.Context, c *maps.Client, request distance.MatrixReque
 	var origins []string
 	var destinations []string
 	for idx, e := range geocodeOut {
-		if idx < len(request.Origins) {
+		if idx < len(input.Origins) {
 			origins = append(origins, e.PlaceID)
 		} else {
 			destinations = append(destinations, e.PlaceID)
 		}
 	}
 
-	matrix, err := GetMatrixFromPlaces(ctx, c, distance.PlacesRequest{
+	matrix, err := MatrixFromPlaces(ctx, c, distance.MatrixPlacesInput{
 		Origins:      origins,
 		Destinations: destinations,
 	})
@@ -43,13 +43,13 @@ func GetMatrix(ctx context.Context, c *maps.Client, request distance.MatrixReque
 	return matrix, nil
 }
 
-func GetMatrixFromPlaces(ctx context.Context, c *maps.Client, in distance.PlacesRequest) (*distance.Matrix, error) {
+func MatrixFromPlaces(ctx context.Context, c *maps.Client, input distance.MatrixPlacesInput) (*distance.MatrixOutput, error) {
 	var origins []string
-	for _, placeID := range in.Origins {
+	for _, placeID := range input.Origins {
 		origins = append(origins, "place_id:"+placeID)
 	}
 	var destinations []string
-	for _, placeID := range in.Destinations {
+	for _, placeID := range input.Destinations {
 		destinations = append(destinations, "place_id:"+placeID)
 	}
 	matrix, err := c.DistanceMatrix(ctx, &maps.DistanceMatrixRequest{
@@ -59,13 +59,13 @@ func GetMatrixFromPlaces(ctx context.Context, c *maps.Client, in distance.Places
 	if err != nil {
 		return nil, err
 	}
-	return toMatrix(matrix), err
+	return toMatrixOutput(matrix), err
 }
 
-func toMatrix(res *maps.DistanceMatrixResponse) *distance.Matrix {
+func toMatrixOutput(response *maps.DistanceMatrixResponse) *distance.MatrixOutput {
 	var rows []distance.MatrixElementsRow
-	for i := range res.Rows {
-		row := res.Rows[i]
+	for i := range response.Rows {
+		row := response.Rows[i]
 		var elements []distance.MatrixElement
 		for j := range row.Elements {
 			elem := row.Elements[j]
@@ -73,18 +73,18 @@ func toMatrix(res *maps.DistanceMatrixResponse) *distance.Matrix {
 		}
 		rows = append(rows, distance.MatrixElementsRow{Elements: elements})
 	}
-	return &distance.Matrix{
-		OriginAddresses:      res.OriginAddresses,
-		DestinationAddresses: res.DestinationAddresses,
+	return &distance.MatrixOutput{
+		OriginAddresses:      response.OriginAddresses,
+		DestinationAddresses: response.DestinationAddresses,
 		Rows:                 rows,
 	}
 }
 
-func toElem(res *maps.DistanceMatrixElement) distance.MatrixElement {
+func toElem(element *maps.DistanceMatrixElement) distance.MatrixElement {
 	return distance.MatrixElement{
-		Status:            res.Status,
-		Duration:          res.Duration,
-		DurationInTraffic: res.DurationInTraffic,
-		Distance:          res.Distance.Meters,
+		Status:            element.Status,
+		Duration:          element.Duration,
+		DurationInTraffic: element.DurationInTraffic,
+		Distance:          element.Distance.Meters,
 	}
 }

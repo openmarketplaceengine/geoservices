@@ -19,7 +19,7 @@ func TestGetMatrix(t *testing.T) {
 		Lng: -73.98145413365043,
 	}
 
-	matrix, err := GetMatrix(&http.Client{}, distance.MatrixRequest{
+	matrix, err := Matrix(&http.Client{}, distance.MatrixPointsInput{
 		Origins:      []geoservices.LatLng{a},
 		Destinations: []geoservices.LatLng{b},
 	})

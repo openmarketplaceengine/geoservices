@@ -5,19 +5,19 @@ import (
 	"time"
 )
 
-type MatrixRequest struct {
+type MatrixPointsInput struct {
 	Origins      []geoservices.LatLng
 	Destinations []geoservices.LatLng
 }
 
-type PlacesRequest struct {
+type MatrixPlacesInput struct {
 	Origins      []string
 	Destinations []string
 }
 
-// Matrix contains distance and duration information
+// MatrixOutput contains distance and duration information
 // for each origin/destination pair for which a route could be calculated.
-type Matrix struct {
+type MatrixOutput struct {
 	// OriginAddresses contains an array of addresses as returned by the API from
 	// your original request.
 	OriginAddresses []string `json:"origin_addresses"`

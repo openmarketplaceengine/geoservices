@@ -40,7 +40,7 @@ func testGetMatrix(t *testing.T) {
 	ctx := context.Background()
 	client, err := maps.NewClient(maps.WithAPIKey(apiKey))
 	require.NoError(t, err)
-	matrix, err := GetMatrix(ctx, client, distance.MatrixRequest{
+	matrix, err := Matrix(ctx, client, distance.MatrixPointsInput{
 		Origins:      []geoservices.LatLng{a},
 		Destinations: []geoservices.LatLng{b},
 	})
@@ -57,7 +57,7 @@ func testGetMatrixFromPlaces(t *testing.T) {
 	ctx := context.Background()
 	client, err := maps.NewClient(maps.WithAPIKey(apiKey))
 	require.NoError(t, err)
-	matrix, err := GetMatrixFromPlaces(ctx, client, distance.PlacesRequest{
+	matrix, err := MatrixFromPlaces(ctx, client, distance.MatrixPlacesInput{
 		Origins:      []string{"ChIJ87a7BJ5YwokR4TLbUoQMB1s"},
 		Destinations: []string{"ChIJVZfjPvZYwokR-sLEBmjjniw"},
 	})
