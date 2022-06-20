@@ -1,7 +1,6 @@
 package osrm
 
 import (
-	"context"
 	"fmt"
 	"github.com/openmarketplaceengine/geoservices/distance"
 	"github.com/openmarketplaceengine/geoservices/osrm"
@@ -10,25 +9,25 @@ import (
 	"time"
 )
 
-func BetweenPoints(ctx context.Context, c *http.Client, in distance.BetweenPointsInput) (*distance.MatrixResponse, error) {
-	request := toTableRequest(in)
-	res, err := table.Table(c, request)
+func Matrix(c *http.Client, input distance.MatrixPointsInput) (*distance.MatrixOutput, error) {
+	req := toTableRequest(input)
+	res, err := table.Table(c, req)
 	if err != nil {
 		return nil, fmt.Errorf("OSRM table request error: %w", err)
 	}
-	return toMatrixResponse(res), nil
+	return toMatrixOutput(res), nil
 }
 
-func toTableRequest(in distance.BetweenPointsInput) table.Request {
+func toTableRequest(input distance.MatrixPointsInput) table.Request {
 	var coordinates = make([]osrm.LngLat, 0)
-	for _, origin := range in.Origins {
+	for _, origin := range input.Origins {
 		coordinates = append(coordinates, osrm.LngLat{origin.Lng, origin.Lat})
 	}
-	for _, destination := range in.Destinations {
+	for _, destination := range input.Destinations {
 		coordinates = append(coordinates, osrm.LngLat{destination.Lng, destination.Lat})
 	}
-	origins := makeRange(0, len(in.Origins)-1)
-	destinations := makeRange(len(in.Origins), len(in.Origins)+len(in.Destinations)-1)
+	origins := makeRange(0, len(input.Origins)-1)
+	destinations := makeRange(len(input.Origins), len(input.Origins)+len(input.Destinations)-1)
 	return table.Request{
 		Coordinates:  coordinates,
 		Origins:      origins,
@@ -45,27 +44,27 @@ func makeRange(min, max int) []int {
 	return a
 }
 
-func toMatrixResponse(res *table.Response) *distance.MatrixResponse {
+func toMatrixOutput(response *table.Response) *distance.MatrixOutput {
 	var rows []distance.MatrixElementsRow
 
 	var originAddresses []string
 	var destinationAddresses []string
-	for i, source := range res.Sources {
+	for i, source := range response.Sources {
 		originAddresses = append(originAddresses, source.Location.Textual())
 		var elements []distance.MatrixElement
-		for j, destination := range res.Destinations {
+		for j, destination := range response.Destinations {
 			destinationAddresses = append(destinationAddresses, destination.Location.Textual())
 			elements = append(elements, distance.MatrixElement{
 				Status:            "",
-				Duration:          time.Duration(res.Durations[i][j]) * time.Second,
+				Duration:          time.Duration(response.Durations[i][j]) * time.Second,
 				DurationInTraffic: 0,
-				Distance:          int(res.Distances[i][j] * 1000),
+				Distance:          int(response.Distances[i][j] * 1000),
 			})
 		}
 		rows = append(rows, distance.MatrixElementsRow{Elements: elements})
 	}
 
-	return &distance.MatrixResponse{
+	return &distance.MatrixOutput{
 		OriginAddresses:      originAddresses,
 		DestinationAddresses: destinationAddresses,
 		Rows:                 rows,

@@ -8,18 +8,15 @@ import (
 	"googlemaps.github.io/maps"
 )
 
-func BetweenPoints(
-	ctx context.Context,
-	client *maps.Client,
-	in distance.BetweenPointsInput) (*distance.MatrixResponse, error) {
+func Matrix(ctx context.Context, c *maps.Client, input distance.MatrixPointsInput) (*distance.MatrixOutput, error) {
 
 	// Batch reverse-geocode all locations
-	geocoder := google.NewGeocoder(client)
+	geocoder := google.NewGeocoder(c)
 	parallelizationFactor := 10
 	geocodeOut, err := geocode.BatchReverseGeocode(
 		ctx,
 		geocoder,
-		append(in.Origins, in.Destinations...),
+		append(input.Origins, input.Destinations...),
 		parallelizationFactor)
 	if err != nil {
 		return nil, err
@@ -28,14 +25,14 @@ func BetweenPoints(
 	var origins []string
 	var destinations []string
 	for idx, e := range geocodeOut {
-		if idx < len(in.Origins) {
+		if idx < len(input.Origins) {
 			origins = append(origins, e.PlaceID)
 		} else {
 			destinations = append(destinations, e.PlaceID)
 		}
 	}
 
-	res, err := BetweenPlaces(ctx, client, distance.BetweenPlacesInput{
+	matrix, err := MatrixFromPlaces(ctx, c, distance.MatrixPlacesInput{
 		Origins:      origins,
 		Destinations: destinations,
 	})
@@ -43,41 +40,32 @@ func BetweenPoints(
 		return nil, err
 	}
 
-	return toRes(res, geocodeOut[:len(in.Origins)], geocodeOut[len(in.Origins):]), nil
+	return matrix, nil
 }
 
-func BetweenPlaces(ctx context.Context, c *maps.Client, in distance.BetweenPlacesInput) (*maps.DistanceMatrixResponse, error) {
+func MatrixFromPlaces(ctx context.Context, c *maps.Client, input distance.MatrixPlacesInput) (*distance.MatrixOutput, error) {
 	var origins []string
-	for _, placeID := range in.Origins {
+	for _, placeID := range input.Origins {
 		origins = append(origins, "place_id:"+placeID)
 	}
 	var destinations []string
-	for _, placeID := range in.Destinations {
+	for _, placeID := range input.Destinations {
 		destinations = append(destinations, "place_id:"+placeID)
 	}
-	return c.DistanceMatrix(ctx, &maps.DistanceMatrixRequest{
-		Origins:                  origins,
-		Destinations:             destinations,
-		Mode:                     "",
-		Language:                 "",
-		Avoid:                    "",
-		Units:                    "",
-		DepartureTime:            "",
-		ArrivalTime:              "",
-		TrafficModel:             "",
-		TransitMode:              nil,
-		TransitRoutingPreference: "",
+	matrix, err := c.DistanceMatrix(ctx, &maps.DistanceMatrixRequest{
+		Origins:      origins,
+		Destinations: destinations,
 	})
+	if err != nil {
+		return nil, err
+	}
+	return toMatrixOutput(matrix), err
 }
 
-func toRes(
-	res *maps.DistanceMatrixResponse,
-	originsOut []*geocode.ReverseGeocodeOutput,
-	destinationsOut []*geocode.ReverseGeocodeOutput,
-) *distance.MatrixResponse {
+func toMatrixOutput(response *maps.DistanceMatrixResponse) *distance.MatrixOutput {
 	var rows []distance.MatrixElementsRow
-	for i := range res.Rows {
-		row := res.Rows[i]
+	for i := range response.Rows {
+		row := response.Rows[i]
 		var elements []distance.MatrixElement
 		for j := range row.Elements {
 			elem := row.Elements[j]
@@ -85,28 +73,18 @@ func toRes(
 		}
 		rows = append(rows, distance.MatrixElementsRow{Elements: elements})
 	}
-	var originAddresses []string
-	for idx := range originsOut {
-		geoResults := originsOut[idx]
-		originAddresses = append(originAddresses, geoResults.FormattedAddress)
-	}
-	var destinationAddresses []string
-	for idx := range destinationsOut {
-		geoResults := destinationsOut[idx]
-		destinationAddresses = append(destinationAddresses, geoResults.FormattedAddress)
-	}
-	return &distance.MatrixResponse{
-		OriginAddresses:      originAddresses,
-		DestinationAddresses: destinationAddresses,
+	return &distance.MatrixOutput{
+		OriginAddresses:      response.OriginAddresses,
+		DestinationAddresses: response.DestinationAddresses,
 		Rows:                 rows,
 	}
 }
 
-func toElem(res *maps.DistanceMatrixElement) distance.MatrixElement {
+func toElem(element *maps.DistanceMatrixElement) distance.MatrixElement {
 	return distance.MatrixElement{
-		Status:            res.Status,
-		Duration:          res.Duration,
-		DurationInTraffic: res.DurationInTraffic,
-		Distance:          res.Distance.Meters,
+		Status:            element.Status,
+		Duration:          element.Duration,
+		DurationInTraffic: element.DurationInTraffic,
+		Distance:          element.Distance.Meters,
 	}
 }
